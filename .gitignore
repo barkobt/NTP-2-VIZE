@@ -1,6 +1,21 @@
+# Visual Studio gereksiz dosyaları
 .vs/
-bin/
-obj/
+[Bb]in/
+[Oo]bj/
 *.user
 *.suo
 *.sln.docstates
+*.userosscache
+*.sln.view
+*.suo
+*.suo
+
+# Build çıktıları
+Debug/
+Release/
+x64/
+x86/
+
+# Geçici dosyalar
+*.tmp
+*.log
