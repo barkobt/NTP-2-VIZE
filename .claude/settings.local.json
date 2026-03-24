@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"C:/Users/Baran/Desktop/NTP-2-VIZE/WindowsFormsApp11/WindowsFormsApp11/App.config\":*)",
+      "Bash(\"C:/Users/Baran/Desktop/NTP-2-VIZE/WindowsFormsApp12/WindowsFormsApp12/App.config\":*)",
+      "Bash(\"C:/Users/Baran/Desktop/NTP-2-VIZE/WindowsFormsApp11/WindowsFormsApp11/Form1.resx\":*)",
+      "Bash(\"C:/Users/Baran/Desktop/NTP-2-VIZE/WindowsFormsApp12/WindowsFormsApp12/Form1.resx\":*)"
+    ]
+  }
+}

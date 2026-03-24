@@ -1,18 +1,24 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp1
 {
-    /* 
-       Form2: Çekiliş sonuçları ile oynanan kolonları karşılaştırdığımız ekran.
+    /*
+       WindowsFormsApp1 — Form2: Çekiliş Sonuç Kontrol Ekranı
+       --------------------------------------------------------
+       Bu form, Form1'de kaydedilen iki dosyayı karşılaştırır:
+       1. Çekiliş dosyası: "3,12,25,31,40,47" gibi tek bir satır
+       2. Kolonlar dosyası: Her satırda bir loto kolonu
+
+       Her kolonun çekilişle kaç sayısı tuttuğunu hesaplar ve listeler.
+
+       ÖĞRENILECEK KAVRAMLAR:
+       - OpenFileDialog ile dosya seçme
+       - File.ReadAllLines ile tüm satırları okuma
+       - String.Split ile satırı parçalama
+       - List<int> ile karşılaştırma
     */
     public partial class Form2 : System.Windows.Forms.Form
     {
@@ -21,95 +27,108 @@ namespace WindowsFormsApp1
             InitializeComponent();
         }
 
-        /* 'Kontrol Et' Butonuna tıklandığında çalışır. */
+        /* "Sonuçları Kontrol Et" Butonuna tıklandığında çalışır. */
         private void button1_Click(object sender, EventArgs e)
         {
-            // İşleme başlamadan önce eski sonuçları temizliyoruz.
+            // Önceki sonuçları temizle (yeni kontrol için hazırla):
             listBox1.Items.Clear();
             textBox1.Clear();
 
-            // OpenFileDialog: Bilgisayardan dosya seçmemizi sağlayan pencereyi açar.
+            // --- ADIM 1: Çekiliş dosyasını oku ---
+            // OpenFileDialog: Dosya seçme penceresi (koddan oluşturuyoruz)
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Title = "Çekiliş dosyasını seçin.";
-            ofd.Filter = "Tüm dosyalar|*.*|text dosyalar|*.txt"; // Sadece belirli uzantıları göstermek için.
+            ofd.Title  = "Cekilis dosyasini secin";
+            ofd.Filter = "Metin Dosyası|*.txt|Tüm Dosyalar|*.*";
 
-            // Kullanıcı dosya seçmeden pencereyi kapattıysa işlemi iptal et.
+            // Kullanıcı "İptal" tıkladıysa işlemi durdur:
             if (ofd.ShowDialog() != DialogResult.OK) return;
 
-            string sayilar;
-            List<int> cekilis;
+            // File.ReadAllLines: Dosyadaki tüm satırları string dizisi olarak okur
+            // [0]: Çekiliş dosyasının ilk (ve tek) satırını alıyoruz
+            string cekilisMetni = File.ReadAllLines(ofd.FileName)[0];
 
-            // File.ReadAllLines: Dosyadaki tüm satırları bir dizi (array) olarak okur.
-            // [0]: Çekiliş dosyasının sadece ilk satırını alıyoruz.
-            sayilar = File.ReadAllLines(ofd.FileName)[0];
+            // ListeCevir: Kendi metodumuz. "3,12,25" → List {3, 12, 25}
+            List<int> cekilis = ListeCevir(cekilisMetni);
 
-            // ListeCevir: Kendi yazdığımız metod. Virgüllü metni sayı listesine çevirir.
-            cekilis = ListeCevir(sayilar);
-
-            // Şimdi kolonların olduğu dosyayı seçtiriyoruz.
-            ofd.Title = "Kolonlar dosyasını seçin.";
-            ofd.Filter = "Tüm dosyalar|*.*|text dosyalar|*.txt";
+            // --- ADIM 2: Kolonlar dosyasını oku ---
+            ofd.Title  = "Kolonlar dosyasini secin";
+            ofd.Filter = "Metin Dosyası|*.txt|Tüm Dosyalar|*.*";
 
             if (ofd.ShowDialog() != DialogResult.OK) return;
 
-            List<int> kolon;
-            // sonuc: Kaç tane 0, 1, 2... 6 tutturan olduğunu saymak için dizi.
-            int[] sonuc = new int[7]; 
-            // sonucK: Tutturan kolonların listesini metin olarak tutmak için.
-            string[] sonucK = new string[7];
-
-            // Dosyadaki tüm satırları (kolonları) okuyoruz.
+            // Dosyadaki tüm satırları (tüm kolonları) oku:
             string[] kolonlar = File.ReadAllLines(ofd.FileName);
 
-            // Her bir kolonu tek tek kontrol ediyoruz.
+            // --- ADIM 3: Her kolonu çekilişle karşılaştır ---
+            // sonuc[i]: i sayısını tutturan kaç kolon var?
+            // Örn: sonuc[3] = 5 → 3 sayı tutturan 5 kolon var
+            int[]    sonuc  = new int[7];
+            string[] sonucK = new string[7];  // Tutturanların metin listesi
+
             for (int i = 0; i < kolonlar.Length; i++)
             {
-                // Boş satır varsa atla.
+                // Boş satırları atla:
                 if (kolonlar[i].Trim() == "") continue;
 
-                // Satırı sayı listesine çevir.
-                kolon = ListeCevir(kolonlar[i]);
-                
-                int say = 0; // Bu kolonda kaç tane doğru tahmin var?
+                // Bu satırı (kolonu) sayı listesine çevir:
+                List<int> kolon = ListeCevir(kolonlar[i]);
+
+                // Bu kolonda kaç doğru tahmin var?
+                int tutturanSayi = 0;
                 for (int j = 0; j < kolon.Count; j++)
                 {
-                    // Eğer çekiliş listesi, kolonun bu sayısını içeriyorsa:
-                    if (cekilis.Contains(kolon[j])) say++;
+                    // cekilis.Contains(kolon[j]): Bu sayı çekilişte var mı?
+                    if (cekilis.Contains(kolon[j]))
+                        tutturanSayi++;
                 }
 
-                // 'say' değişkeni kaç tuttuğunu gösterir (0-6 arası).
-                // İlgili indeksi 1 artırıyoruz.
-                sonuc[say]++;
-                // Tutturan kolonu ilgili metne ekliyoruz.
-                sonucK[say] += kolonlar[i] + "; ";
+                // İlgili sayacı artır:
+                sonuc[tutturanSayi]++;
+                // Kolonu ilgili metne ekle:
+                sonucK[tutturanSayi] += kolonlar[i] + "; ";
             }
 
-            // Sonuçları ListBox'a (Liste kutusu) ekleyerek kullanıcıya gösteriyoruz.
+            // --- ADIM 4: Sonuçları ekranda göster ---
+            // ListBox'a özet (kaç tutturan kaç kolon):
             for (int i = 0; i < sonuc.Length; i++)
             {
-                listBox1.Items.Add(i + " tutturan " + sonuc[i] + " kişi");
+                listBox1.Items.Add(i + " tutturan: " + sonuc[i] + " kolon");
             }
 
-            // Detaylı listeyi TextBox'a yazıyoruz.
+            // TextBox'a detaylı liste:
             for (int i = 0; i < sonucK.Length; i++)
             {
-                textBox1.Text += "\r\n" + i + " tutturan " + sonucK[i] + ":\r\n";
+                if (sonucK[i] != null && sonucK[i] != "")
+                {
+                    textBox1.Text += i + " tutturan kolonlar:\r\n" + sonucK[i] + "\r\n\r\n";
+                }
             }
         }
 
-        /* 
-           Virgülle ayrılmış metni ("1,2,3") List<int> yapısına çeviren yardımcı metod.
+        /*
+           ListeCevir(): Virgülle ayrılmış sayı metnini List<int>'e çevirir.
+           Örnek: "3,12,25,31,40,47" → List<int> {3, 12, 25, 31, 40, 47}
+
+           'private': Sadece Form2 içinden çağrılabilir.
+           'List<int>': İçinde tam sayı tutan dinamik liste döndürür.
         */
         private List<int> ListeCevir(string sayilar)
         {
             List<int> l = new List<int>();
-            // Split(','): Metni virgüllerden parçalara böler ve dizi yapar.
-            string[] parts = sayilar.Split(',');
+
+            // Split(','): Metni virgüllerden parçalara böler
+            // "3,12,25" → ["3", "12", "25"]
+            string[] parts = sayilar.Trim().Split(',');
 
             for (int i = 0; i < parts.Length; i++)
             {
-                // Convert.ToInt32: Metin halindeki sayıyı ("5") gerçek sayıya (5) çevirir.
-                l.Add(Convert.ToInt32(parts[i]));
+                // parts[i] boş olabilir (iki virgül yan yana gelirse), kontrol et:
+                if (parts[i].Trim() != "")
+                {
+                    // Convert.ToInt32: Metin halindeki sayıyı gerçek sayıya çevirir
+                    // "12" → 12
+                    l.Add(Convert.ToInt32(parts[i].Trim()));
+                }
             }
             return l;
         }

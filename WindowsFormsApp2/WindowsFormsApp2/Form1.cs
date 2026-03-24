@@ -7,7 +7,7 @@ namespace WindowsFormsApp2
        WindowsFormsApp2: Sayı analiz uygulaması.
        Bu uygulama bir sayının Asal, Mükemmel veya Palindrom olup olmadığını kontrol eder.
     */
-    public partial class Form1 : Form
+    public partial class Form1 : System.Windows.Forms.Form
     {
         // Rastgele sayı üretmek için nesne.
         Random rastgele = new Random();
